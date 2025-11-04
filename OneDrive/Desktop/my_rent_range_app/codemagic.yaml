@@ -17,6 +17,10 @@ workflows:
           cd /Users/builder/clone
           flutter clean
           flutter build ipa --release
+    code_signing:
+      # Use App Store distribution profile for App Store Connect uploads
+      profile_type: app_store
+      bundle_id: com.freshducky.myrentrange
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
