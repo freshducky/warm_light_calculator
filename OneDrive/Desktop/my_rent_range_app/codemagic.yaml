@@ -17,9 +17,9 @@ workflows:
           cd /Users/builder/clone
           flutter clean
           flutter build ipa --release
-    code_signing:
-      # Use App Store distribution profile for App Store Connect uploads
-      profile_type: app_store
+    # Code signing configuration for App Store distribution
+    ios_signing:
+      distribution_type: app_store  # Force App Store distribution (not Development)
       bundle_id: com.freshducky.myrentrange
     artifacts:
       - build/ios/ipa/*.ipa
