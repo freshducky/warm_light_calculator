@@ -1,22 +1,15 @@
 workflows:
-  ios-native-workflow:
-    name: iOS Native Build
+  ios-production:
+    name: iOS Production Build
     environment:
       groups:
         - app_store_credentials
       xcode: latest
     scripts:
-      - name: Get Flutter packages
+      - name: Build iOS
         script: |
           cd "OneDrive/Desktop/warm_light_calculator"
-          flutter packages pub get
-      - name: Build iOS app
-        script: |
-          cd "OneDrive/Desktop/warm_light_calculator/ios"
-          xcode-project build-ipa \
-            --project "Runner.xcworkspace" \
-            --scheme "Runner" \
-            --output-dir "build/ios/ipa"
+          flutter build ipa --release
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
