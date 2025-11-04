@@ -1,6 +1,6 @@
 # App Icon Creation Instructions
 
-The app icon should be a grid of 4 calculator buttons using the current warm theme colors.
+**IMPORTANT**: The app icon should be a grid of 4 calculator buttons (NOT the developer logo). Use the current warm theme colors.
 
 ## Design Specifications
 

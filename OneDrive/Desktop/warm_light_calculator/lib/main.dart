@@ -18,19 +18,113 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.9,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5E6D3), // Warm cream background
       body: Center(
-        child: Image.asset(
-          'assets/freshducky.jpg',
-          width: 200,
-          height: 200,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            return const Icon(Icons.calculate, size: 100, color: Color(0xFF8B4513));
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // Circular loading indicator around the logo
+                SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      const Color(0xFF8B4513).withOpacity(0.8 * _pulseAnimation.value),
+                    ),
+                    strokeWidth: 4,
+                  ),
+                ),
+                // Circular logo with pulse animation
+                Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF8B4513).withOpacity(0.3 * _pulseAnimation.value),
+                          blurRadius: 20 * _pulseAnimation.value,
+                          spreadRadius: 5 * _pulseAnimation.value,
+                        ),
+                      ],
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF8B4513),
+                          width: 3,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/freshducky.jpg',
+                          width: 180,
+                          height: 180,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 180,
+                              height: 180,
+                              color: const Color(0xFF8B4513),
+                              child: const Icon(
+                                Icons.calculate,
+                                size: 100,
+                                color: Color(0xFFF5E6D3),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
           },
         ),
       ),
@@ -311,6 +405,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
   bool _waitingForOperand = false;
   double _memory = 0.0;
   String? _tipBreakdown; // Stores tip amount for display
+  String? _previousDisplay; // For undo functionality
   final FlutterTts _tts = FlutterTts();
   late AnimationController _buttonAnimationController;
 
@@ -425,6 +520,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
       final double value = double.parse(_display.replaceAll(',', ''));
       if (value == 0) return; // Don't calculate tip on zero
       
+      _saveStateForUndo(); // Save state before tip calculation
+      
       final double tip = value * (percentage / 100);
       final double result = value + tip;
       
@@ -462,8 +559,36 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
     return NumberFormatter.formatNumber(numberStr);
   }
 
+  void _undo() {
+    if (_previousDisplay != null) {
+      setState(() {
+        _display = _previousDisplay!;
+        _previousDisplay = null; // Clear after undo so can't undo multiple times
+      });
+      _playSound();
+    }
+  }
+
+  void _saveStateForUndo() {
+    // Save current state before making changes
+    if (_display != 'Error' && _display != '0') {
+      _previousDisplay = _display;
+    }
+  }
+
   Future<void> _onButtonPressed(String value) async {
     await _playSound();
+    
+    // Handle undo separately
+    if (value == '↶') {
+      _undo();
+      return;
+    }
+    
+    // Save state before making changes (except for memory operations)
+    if (!value.startsWith('M')) {
+      _saveStateForUndo();
+    }
     
     setState(() {
       if (value == 'C') {
@@ -767,15 +892,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
                         ],
                       ),
                     ),
-                    // Row 6: 0 (spanning 2 columns), Decimal
+                    // Row 6: 0, Decimal, Undo
                     Expanded(
                       child: Row(
                         children: [
-                          Expanded(
-                            flex: 2,
-                            child: _buildButton('0', theme: theme),
-                          ),
+                          _buildButton('0', theme: theme),
                           _buildButton('.', theme: theme),
+                          _buildButton('↶', isSpecial: true, theme: theme),
                         ],
                       ),
                     ),
