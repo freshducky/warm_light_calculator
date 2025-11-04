@@ -11,6 +11,33 @@ void main() {
   runApp(const WarmLightCalculatorApp());
 }
 
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5E6D3), // Warm cream background
+      body: Center(
+        child: Image.asset(
+          'assets/freshducky.jpg',
+          width: 200,
+          height: 200,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(Icons.calculate, size: 100, color: Color(0xFF8B4513));
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class WarmLightCalculatorApp extends StatefulWidget {
   const WarmLightCalculatorApp({super.key});
 
@@ -30,12 +57,17 @@ class _WarmLightCalculatorAppState extends State<WarmLightCalculatorApp> {
 
   Future<void> _loadSettings() async {
     await _settings.loadSettings();
-    setState(() {
-      _settingsLoaded = true;
-    });
+    // Add a small delay for splash screen visibility
+    await Future.delayed(const Duration(seconds: 1));
+    if (mounted) {
+      setState(() {
+        _settingsLoaded = true;
+      });
+    }
   }
 
   ThemeData _getTheme() {
+    // High contrast takes priority
     if (_settings.highContrast) {
       if (_settings.highContrastMode == 'dark') {
         // High contrast dark mode - black background, warm yellow/cream text
@@ -124,6 +156,65 @@ class _WarmLightCalculatorAppState extends State<WarmLightCalculatorApp> {
           ),
         );
       }
+    } else if (_settings.darkMode) {
+      // Regular dark mode - warm dark theme
+      return ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: MaterialColor(
+          0xFF8B4513,
+          <int, Color>{
+            50: const Color(0xFF3D1F08),
+            100: const Color(0xFF52290B),
+            200: const Color(0xFF66330E),
+            300: const Color(0xFF7A3D11),
+            400: const Color(0xFF8B4513),
+            500: const Color(0xFFBF5F1A),
+            600: const Color(0xFFCA7C3A),
+            700: const Color(0xFFD9A06D),
+            800: const Color(0xFFE8C4A0),
+            900: const Color(0xFFF5E6D3),
+          },
+        ),
+        scaffoldBackgroundColor: const Color(0xFF2D1810),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF52290B),
+          foregroundColor: Color(0xFFD9A06D),
+          elevation: 0,
+          centerTitle: true,
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(
+            fontSize: 48,
+            fontWeight: FontWeight.w300,
+            color: Color(0xFFD9A06D),
+          ),
+          displayMedium: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFFD9A06D),
+          ),
+          headlineLarge: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFFD9A06D),
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFFD9A06D),
+          ),
+        ),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF8B4513),
+          secondary: Color(0xFFCA7C3A),
+          surface: Color(0xFF3D1F08),
+          background: Color(0xFF2D1810),
+          onPrimary: Color(0xFFD9A06D),
+          onSecondary: Color(0xFF2D1810),
+          onSurface: Color(0xFFD9A06D),
+          onBackground: Color(0xFFD9A06D),
+        ),
+      );
     } else {
       // Warm light theme (default)
       return ThemeData(
@@ -188,18 +279,12 @@ class _WarmLightCalculatorAppState extends State<WarmLightCalculatorApp> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_settingsLoaded) {
-      return const MaterialApp(
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-      );
-    }
-
     return MaterialApp(
       title: 'Warm Light Calculator',
       theme: _getTheme(),
-      home: CalculatorScreen(settings: _settings, onSettingsChanged: _loadSettings),
+      home: _settingsLoaded
+          ? CalculatorScreen(settings: _settings, onSettingsChanged: _loadSettings)
+          : const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -225,6 +310,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
   String _operation = '';
   bool _waitingForOperand = false;
   double _memory = 0.0;
+  String? _tipBreakdown; // Stores tip amount for display
   final FlutterTts _tts = FlutterTts();
   late AnimationController _buttonAnimationController;
 
@@ -343,10 +429,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
       final double result = value + tip;
       
       // Round to 2 decimal places (cents) for currency
+      final double roundedTip = (tip * 100).round() / 100;
       final double roundedResult = (result * 100).round() / 100;
       
       setState(() {
         _display = _formatNumber(roundedResult);
+        _tipBreakdown = 'Tip: ${_formatNumber(roundedTip)}';
         _waitingForOperand = true;
         _operation = ''; // Clear any pending operation
         _previousValue = ''; // Clear previous value
@@ -358,6 +446,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
       setState(() {
         _display = 'Error';
         _waitingForOperand = false;
+        _tipBreakdown = null;
       });
       _speakText('Error');
     }
@@ -382,6 +471,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
         _previousValue = '';
         _operation = '';
         _waitingForOperand = false;
+        _tipBreakdown = null;
       } else if (value == '⌫') {
         if (_display != 'Error' && _display.length > 1) {
           String newDisplay = _display.substring(0, _display.length - 1).replaceAll(',', '');
@@ -390,8 +480,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
           _display = '0';
         }
       } else if (value == '=') {
+        _tipBreakdown = null; // Clear tip breakdown on new calculation
         _calculate();
       } else if (['+', '-', '×', '÷'].contains(value)) {
+        _tipBreakdown = null; // Clear tip breakdown on new operation
         if (_operation.isNotEmpty && !_waitingForOperand) {
           _calculate();
         }
@@ -416,6 +508,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
         if (_waitingForOperand || _display == 'Error') {
           _display = value;
           _waitingForOperand = false;
+          _tipBreakdown = null; // Clear tip breakdown when entering new number
         } else {
           String cleanDisplay = _display.replaceAll(',', '');
           // If display ends with a decimal point, append the digit and format
@@ -574,6 +667,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> with SingleTickerPr
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
+                      if (_tipBreakdown != null)
+                        Text(
+                          _tipBreakdown!,
+                          style: theme.textTheme.headlineLarge?.copyWith(
+                            fontSize: 18,
+                            color: theme.textTheme.displayLarge?.color?.withOpacity(0.7),
+                          ),
+                          textAlign: TextAlign.end,
+                        ),
                       Text(
                         _display,
                         style: theme.textTheme.displayLarge,
@@ -776,6 +878,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _highContrast;
   late bool _soundEffects;
   late String _highContrastMode;
+  late bool _darkMode;
 
   @override
   void initState() {
@@ -784,6 +887,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _highContrast = widget.settings.highContrast;
     _soundEffects = widget.settings.soundEffects;
     _highContrastMode = widget.settings.highContrastMode;
+    _darkMode = widget.settings.darkMode;
   }
 
   Future<void> _saveSettings() async {
@@ -791,6 +895,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     widget.settings.highContrast = _highContrast;
     widget.settings.soundEffects = _soundEffects;
     widget.settings.highContrastMode = _highContrastMode;
+    widget.settings.darkMode = _darkMode;
     await widget.settings.saveSettings();
   }
 
@@ -815,12 +920,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           SwitchListTile(
+            title: const Text('Dark Mode'),
+            subtitle: const Text('Warm dark theme'),
+            value: _darkMode,
+            onChanged: (value) {
+              setState(() {
+                _darkMode = value;
+                // Disable high contrast when dark mode is enabled
+                if (value) {
+                  _highContrast = false;
+                }
+              });
+              _saveSettings();
+            },
+          ),
+          SwitchListTile(
             title: const Text('High Contrast Mode'),
             subtitle: const Text('Enhanced visibility for accessibility'),
             value: _highContrast,
             onChanged: (value) {
               setState(() {
                 _highContrast = value;
+                // Disable dark mode when high contrast is enabled
+                if (value) {
+                  _darkMode = false;
+                }
               });
               _saveSettings();
             },
@@ -869,6 +993,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const SizedBox(height: 24),
+          ListTile(
+            title: const Text('Privacy Policy'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PrivacyPolicyScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
@@ -876,6 +1013,108 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(fontSize: 14),
               textAlign: TextAlign.center,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PrivacyPolicyScreen extends StatelessWidget {
+  const PrivacyPolicyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Privacy Policy'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: const [
+          Text(
+            'Privacy Policy',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Last Updated: 2025',
+            style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Introduction',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Warm Light Calculator ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we handle information when you use our calculator application.',
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Information We Collect',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Warm Light Calculator does not collect, store, or transmit any personal information. All calculations are performed locally on your device. We do not:\n\n'
+            '• Collect personal data\n'
+            '• Track your usage\n'
+            '• Store calculation history\n'
+            '• Share information with third parties\n'
+            '• Use analytics or tracking services',
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Local Storage',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'The app stores your preferences (such as text-to-speech settings, theme preferences, and accessibility options) locally on your device. This information never leaves your device and is not accessible to us or any third parties.',
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Third-Party Services',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Warm Light Calculator does not integrate with any third-party services that collect or share your information.',
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Children\'s Privacy',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Our app is safe for users of all ages. We do not knowingly collect information from children, and since we do not collect any information, children can use the app safely.',
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Changes to This Privacy Policy',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated revision date.',
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Contact Us',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'If you have any questions about this Privacy Policy, please contact us through the app store listing or our developer profile.',
+            style: TextStyle(fontSize: 16),
           ),
         ],
       ),
