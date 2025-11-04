@@ -12,14 +12,16 @@ workflows:
         script: |
           cd "OneDrive/Desktop/warm_light_calculator"
           flutter packages pub get
-      - name: Configure Xcode project
+      - name: Configure code signing manually
         script: |
           cd "OneDrive/Desktop/warm_light_calculator/ios"
           xcode-project use-profiles
+          # Force App Store distribution method
+          /usr/libexec/PlistBuddy -c "Set :method app-store" /Users/builder/export_options.plist
       - name: Build iOS IPA
         script: |
           cd "OneDrive/Desktop/warm_light_calculator"
-          flutter build ipa --release
+          flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
