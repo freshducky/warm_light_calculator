@@ -48,7 +48,7 @@ class AppTheme {
             fontFamily: 'Poppins',
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: cardBackground,
           elevation: 2,
           shape: RoundedRectangleBorder(
@@ -149,7 +149,7 @@ class AppTheme {
             fontFamily: 'Poppins',
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: warmCardBackground,
           elevation: 2,
           shape: RoundedRectangleBorder(
@@ -253,7 +253,7 @@ class AppTheme {
             fontFamily: 'Poppins',
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: darkSurfaceColor,
           elevation: 2,
           shape: RoundedRectangleBorder(
