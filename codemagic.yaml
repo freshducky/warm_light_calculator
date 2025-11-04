@@ -1,27 +1,22 @@
 workflows:
-  ios-workflow:
-    name: iOS Build
-    # Warm Light Calculator CI/CD configuration
+  ios-native-workflow:
+    name: iOS Native Build
     environment:
       groups:
         - app_store_credentials
       xcode: latest
-      cocoapods: default
     scripts:
       - name: Get Flutter packages
         script: |
           cd "OneDrive/Desktop/warm_light_calculator"
           flutter packages pub get
-      - name: Configure code signing manually
+      - name: Build iOS app
         script: |
           cd "OneDrive/Desktop/warm_light_calculator/ios"
-          xcode-project use-profiles
-          # Force App Store distribution method
-          /usr/libexec/PlistBuddy -c "Set :method app-store" /Users/builder/export_options.plist
-      - name: Build iOS IPA
-        script: |
-          cd "OneDrive/Desktop/warm_light_calculator"
-          flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+          xcode-project build-ipa \
+            --project "Runner.xcworkspace" \
+            --scheme "Runner" \
+            --output-dir "build/ios/ipa"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
