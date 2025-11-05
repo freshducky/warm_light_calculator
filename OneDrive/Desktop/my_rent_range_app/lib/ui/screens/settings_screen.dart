@@ -32,6 +32,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isPurchasing = false;
   bool _adsRemoved = false;
   bool _isLoadingProducts = false;
+  String? _iapError;
+  bool _isPurchasingDonation = false;
 
   @override
   void initState() {
@@ -64,6 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadProducts() async {
     setState(() {
       _isLoadingProducts = true;
+      _iapError = null;
     });
 
     try {
@@ -72,12 +75,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         setState(() {
           _products = products;
           _isLoadingProducts = false;
+          if (products.isEmpty) {
+            _iapError = 'Unable to load products. Please check your connection and try again.';
+          }
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoadingProducts = false;
+          _iapError = 'Error loading products: ${e.toString()}';
         });
       }
     }
@@ -91,7 +98,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_products.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to load products. Please try again.')),
+          const SnackBar(
+            content: Text('Remove Ads product not available. Please try again later.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
+    final removeAdsProduct = _products.firstWhere(
+      (p) => p.id == 'remove.ads',
+      orElse: () => _products.first,
+    );
+
+    if (removeAdsProduct.id != 'remove.ads') {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Remove Ads product not found. Please try again later.'),
+            duration: Duration(seconds: 3),
+          ),
         );
       }
       return;
@@ -99,24 +126,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() {
       _isPurchasing = true;
+      _iapError = null;
     });
 
     try {
-      final product = _products.first;
-      final success = await _iapService.purchaseRemoveAds(product);
+      final success = await _iapService.purchaseRemoveAds(removeAdsProduct);
       
       if (!success && mounted) {
+        setState(() {
+          _iapError = 'Purchase could not be initiated. Please check your connection and try again.';
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Purchase failed. Please try again.')),
+          const SnackBar(
+            content: Text('Purchase failed. Please try again.'),
+            duration: Duration(seconds: 3),
+          ),
         );
       }
       
-      // Check status after purchase attempt
+      // Check status after purchase attempt (with delay to allow purchase to process)
+      await Future.delayed(const Duration(seconds: 1));
       await _checkAdStatus();
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _iapError = 'Purchase error: ${e.toString()}';
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Purchase error occurred.')),
+          SnackBar(
+            content: Text('Purchase error: ${e.toString()}'),
+            duration: const Duration(seconds: 4),
+          ),
         );
       }
     } finally {
@@ -127,10 +167,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     }
   }
+  
+  Future<void> _purchaseDonation(ProductDetails product) async {
+    setState(() {
+      _isPurchasingDonation = true;
+      _iapError = null;
+    });
+
+    try {
+      final success = await _iapService.purchaseDonation(product);
+      
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Thank you for your support!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Donation could not be processed. Please try again.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isPurchasingDonation = false;
+        });
+      }
+    }
+  }
+  
+  ProductDetails? _getDonationProduct(String productId) {
+    try {
+      return _products.firstWhere((p) => p.id == productId);
+    } catch (e) {
+      return null;
+    }
+  }
 
   Future<void> _restorePurchases() async {
     setState(() {
       _isPurchasing = true;
+      _iapError = null;
     });
 
     try {
@@ -144,13 +235,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             content: Text(_adsRemoved 
               ? 'Purchases restored successfully!' 
               : 'No purchases found to restore.'),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _iapError = 'Restore error: ${e.toString()}';
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to restore purchases.')),
+          SnackBar(
+            content: Text('Failed to restore purchases: ${e.toString()}'),
+            duration: const Duration(seconds: 4),
+          ),
         );
       }
     } finally {
@@ -187,6 +285,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     }
+  }
+  
+  Widget _buildDonationButton(BuildContext context, {required int tier, required String amount, required String productId}) {
+    final product = _getDonationProduct(productId);
+    final isAvailable = product != null;
+    final isDisabled = _isPurchasingDonation || !isAvailable;
+    
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: isDisabled ? null : () => _purchaseDonation(product!),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          side: BorderSide(
+            color: isDisabled 
+              ? Colors.grey.withValues(alpha: 0.3)
+              : Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+          ),
+        ),
+        child: _isPurchasingDonation
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.favorite,
+                  color: isDisabled 
+                    ? Colors.grey
+                    : Theme.of(context).colorScheme.primary,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isAvailable ? 'Support $amount' : '$amount (Unavailable)',
+                  style: TextStyle(
+                    color: isDisabled 
+                      ? Colors.grey
+                      : Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+      ),
+    );
   }
 
   Future<void> _clearHistory() async {
@@ -414,7 +561,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Support MyRentRange
+          // Support MyRentRange (IAP Donations)
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -436,48 +583,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'MyRentRange is a solo project built to help renters understand fair housing costs and avoid overpaying. If this site helped you, please consider supporting it — every donation helps cover hosting, development, and research.',
+                    'MyRentRange is a solo project built to help renters understand fair housing costs and avoid overpaying. If this app helped you, please consider supporting it — every donation helps cover hosting, development, and research.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 16),
-                  InkWell(
-                    onTap: () => _openUrl('https://cash.app/\$MyRentRange'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-                        ),
+                  // Donation Tiers
+                  if (_isLoadingProducts)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: CircularProgressIndicator(),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.attach_money,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Donate via Cash App',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.open_in_new,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 16,
-                          ),
-                        ],
-                      ),
+                    )
+                  else ...[
+                    // $1 Donation
+                    _buildDonationButton(
+                      context,
+                      tier: 1,
+                      amount: '\$1',
+                      productId: 'donation.tier.1',
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    // $5 Donation
+                    _buildDonationButton(
+                      context,
+                      tier: 5,
+                      amount: '\$5',
+                      productId: 'donation.tier.5',
+                    ),
+                    const SizedBox(height: 8),
+                    // $10 Donation
+                    _buildDonationButton(
+                      context,
+                      tier: 10,
+                      amount: '\$10',
+                      productId: 'donation.tier.10',
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Text(
                     'Thank you for helping make fair housing data more accessible!',
@@ -550,11 +692,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Remove banner ads with a one-time purchase of \$0.99. Support MyRentRange development!',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
+                    if (_iapError != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red[700], size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _iapError!,
+                                style: TextStyle(
+                                  color: Colors.red[700],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _isPurchasing || _isLoadingProducts ? null : _purchaseRemoveAds,
+                        onPressed: (_isPurchasing || _isLoadingProducts) ? null : _purchaseRemoveAds,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
@@ -568,12 +738,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: _isPurchasing ? null : _restorePurchases,
-                        child: const Text('Restore Purchases'),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: (_isPurchasing || _isLoadingProducts) ? null : _restorePurchases,
+                            child: const Text('Restore Purchases'),
+                          ),
+                        ),
+                        if (_products.isEmpty || _iapError != null)
+                          TextButton(
+                            onPressed: _isLoadingProducts ? null : _loadProducts,
+                            child: const Text('Retry'),
+                          ),
+                      ],
                     ),
                   ],
                 ],
