@@ -1,7 +1,7 @@
 name: warm_light_calculator
 description: A gentle, eye-friendly calculator app with warm colors and large, accessible text.
 publish_to: 'none'
-version: 1.1.0+2
+version: 2.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

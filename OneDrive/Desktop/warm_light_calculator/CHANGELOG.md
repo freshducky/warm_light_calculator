@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.1.0
+## Version 2.0.0
 
 ### New Features
 - **Multi-language Support**: Added support for 15 languages (English, Spanish, French, Mandarin, Japanese, Finnish, Afrikaans, Swahili, German, Portuguese, Italian, Russian, Arabic, Hindi, Korean)
