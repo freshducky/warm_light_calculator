@@ -1,0 +1,100 @@
+The C compiler identification could not be found in "C:/Users/kturn/OneDrive/Documents/warm_light_calculator/android/app/.cxx/Debug/4y593k5k/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdC/CMakeCCompilerId-87923caf.o.tmp"
+
+The C compiler identification could not be found in "C:/Users/kturn/OneDrive/Documents/warm_light_calculator/android/app/.cxx/Debug/4y593k5k/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdC/CMakeCCompilerId.o"
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" did not produce an executable in "C:/Users/kturn/OneDrive/Documents/warm_light_calculator/android/app/.cxx/Debug/4y593k5k/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdC".
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe 
+Build flags: -g;-DANDROID;-fdata-sections;-ffunction-sections;-funwind-tables;-fstack-protector-strong;-no-canonical-prefixes;-D_FORTIFY_SOURCE=2;-Wformat;-Werror=format-security;
+Id flags:  
+
+The output was:
+1
+lld: error: unable to find library -lssp_nonshared
+lld: error: unable to find library -lssp
+lld: error: unable to find library -lmingw32
+lld: error: unable to find library -lgcc
+lld: error: unable to find library -lgcc_eh
+lld: error: unable to find library -lmoldname
+lld: error: unable to find library -lmingwex
+lld: error: unable to find library -lmsvcrt
+lld: error: unable to find library -ladvapi32
+lld: error: unable to find library -lshell32
+lld: error: unable to find library -luser32
+lld: error: unable to find library -lkernel32
+lld: error: unable to find library -lmingw32
+lld: error: unable to find library -lgcc
+lld: error: unable to find library -lgcc_eh
+lld: error: unable to find library -lmoldname
+lld: error: unable to find library -lmingwex
+lld: error: unable to find library -lmsvcrt
+lld: error: unable to find library -lkernel32
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe 
+Build flags: -g;-DANDROID;-fdata-sections;-ffunction-sections;-funwind-tables;-fstack-protector-strong;-no-canonical-prefixes;-D_FORTIFY_SOURCE=2;-Wformat;-Werror=format-security;
+Id flags:  
+
+The output was:
+1
+lld: error: unable to find library -lssp_nonshared
+lld: error: unable to find library -lssp
+lld: error: unable to find library -lmingw32
+lld: error: unable to find library -lgcc
+lld: error: unable to find library -lgcc_eh
+lld: error: unable to find library -lmoldname
+lld: error: unable to find library -lmingwex
+lld: error: unable to find library -lmsvcrt
+lld: error: unable to find library -ladvapi32
+lld: error: unable to find library -lshell32
+lld: error: unable to find library -luser32
+lld: error: unable to find library -lkernel32
+lld: error: unable to find library -lmingw32
+lld: error: unable to find library -lgcc
+lld: error: unable to find library -lgcc_eh
+lld: error: unable to find library -lmoldname
+lld: error: unable to find library -lmingwex
+lld: error: unable to find library -lmsvcrt
+lld: error: unable to find library -lkernel32
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Detecting C compiler ABI info failed to compile with the following output:
+Change Dir: C:/Users/kturn/OneDrive/Documents/warm_light_calculator/android/app/.cxx/Debug/4y593k5k/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\kturn\AppData\Local\Android\sdk\cmake\3.22.1\bin\ninja.exe cmTC_a9b45 && ninja: error: unknown target 'cmTC_a9b45'
+
+
+
+
+Detecting C compiler ABI info failed to compile with the following output:
+Change Dir: C:/Users/kturn/OneDrive/Documents/warm_light_calculator/android/app/.cxx/Debug/4y593k5k/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\kturn\AppData\Local\Android\sdk\cmake\3.22.1\bin\ninja.exe cmTC_0f946 && [1/2] Building C object CMakeFiles/cmTC_0f946.dir/CMakeCCompilerABI.c.o
+FAILED: CMakeFiles/cmTC_0f946.dir/CMakeCCompilerABI.c.o 
+C:\Users\kturn\AppData\Local\Android\Sdk\ndk\26.3.11579264\toolchains\llvm\prebuilt\windows-x86_64\bin\clang.exe --target=aarch64-none-linux-android21 --sysroot=C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat   -fPIE   -v -MD -MT CMakeFiles/cmTC_0f946.dir/CMakeCCompilerABI.c.o -MF CMakeFiles\cmTC_0f946.dir\CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_0f946.dir/CMakeCCompilerABI.c.o -c C:/Users/kturn/AppData/Local/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCCompilerABI.c
+Android (11349228, based on r487747e) clang version 17.0.2 (https://android.googlesource.com/toolchain/llvm-project d9f89f4d16663d5012e5c09495f3b30ece3d2362)
+Target: aarch64-none-linux-android21
+Thread model: posix
+InstalledDir: C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/bin
+ (in-process)
+ "C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe" -cc1 -triple aarch64-none-linux-android21 -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu generic -target-feature +neon -target-feature +v8a -target-feature +fix-cortex-a53-835769 -target-abi aapcs -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=C:/Users/kturn/OneDrive/Documents/warm_light_calculator/android/app/.cxx/Debug/4y593k5k/arm64-v8a/CMakeFiles/CMakeTmp -resource-dir C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/lib/clang/17 -dependency-file "CMakeFiles\\cmTC_0f946.dir\\CMakeCCompilerABI.c.o.d" -MT CMakeFiles/cmTC_0f946.dir/CMakeCCompilerABI.c.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot -internal-isystem C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/lib/clang/17/include -internal-isystem C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include -internal-externc-isystem C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/aarch64-linux-android -internal-externc-isystem C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include -internal-externc-isystem C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include -Wformat -fdebug-compilation-dir=C:/Users/kturn/OneDrive/Documents/warm_light_calculator/android/app/.cxx/Debug/4y593k5k/arm64-v8a/CMakeFiles/CMakeTmp -ferror-limit 19 -stack-protector 2 -fno-signed-char -fgnuc-version=4.2.1 -target-feature +outline-atomics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_0f946.dir/CMakeCCompilerABI.c.o -x c C:/Users/kturn/AppData/Local/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCCompilerABI.c
+clang -cc1 version 17.0.2 based upon LLVM 17.0.2 default target x86_64-w64-windows-gnu
+ignoring nonexistent directory "C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include"
+ignoring nonexistent directory "C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/lib/clang/17/include
+ C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/aarch64-linux-android
+ C:/Users/kturn/AppData/Local/Android/Sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
+End of search list.
+error: unable to open output file 'CMakeFiles/cmTC_0f946.dir/CMakeCCompilerABI.c.o': 'No such file or directory'
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+
+

@@ -5,11 +5,12 @@ workflows:
       groups:
         - app_store_credentials
       xcode: latest
+      cocoapods: default
     scripts:
+      - name: Get Flutter packages
+        script: flutter packages pub get
       - name: Build iOS
-        script: |
-          cd "OneDrive/Desktop/warm_light_calculator"
-          flutter build ipa --release
+        script: flutter build ipa --release
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
@@ -17,4 +18,3 @@ workflows:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-
