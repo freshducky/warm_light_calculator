@@ -30,3 +30,6 @@ flutter:
     - assets/freshducky.jpg
     - assets/calculator.png
     - assets/click_sound.mp3
+
+dependency_overrides:
+  intl: 0.20.2
