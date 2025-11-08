@@ -15,6 +15,7 @@ dependencies:
   flutter_tts: ^4.0.2
   shared_preferences: ^2.2.2
   audioplayers: ^6.0.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -29,6 +30,3 @@ flutter:
     - assets/freshducky.jpg
     - assets/calculator.png
     - assets/click_sound.mp3
-
-dependency_overrides:
-  intl: ^0.20.2
