@@ -5,6 +5,7 @@
 .pub/
 build/
 flutter_export_environment.sh
+pubspec.lock
 
 # Android
 android/.gradle
